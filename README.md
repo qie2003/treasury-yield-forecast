@@ -68,10 +68,10 @@ leaks through overlapping time-series targets.
 
 Predicting the forward 5-day change in the 10Y yield (walk-forward, 2020–2026 OOS):
 
-| Model | OOS R² | Hit rate | IC | Newey–West t |
-|---|---|---|---|---|
-| OLS | −0.054 | 45.7% | −0.152 | −3.47 |
-| Ridge | −0.054 | 45.7% | −0.152 | −3.47 |
+| Model | OOS R² | Hit rate | Newey–West t |
+|---|---|---|---|
+| OLS | −0.054 | 45.7% | −3.47 |
+| Ridge | −0.054 | 45.7% | −3.47 |
 
 Alternative specifications (21-day horizon, random forests) fail the same
 way. Diagnosis: the signal→yield relationship **flips sign across policy
@@ -91,20 +91,20 @@ Target: log of forward 21-trading-day realized volatility of daily yield
 changes. Features: the 8 stress z-scores + log backward 5d/21d realized vol
 (vol clustering). Rolling 3-year ridge, monthly refit, 21-row embargo.
 
-| Segment | OOS R² (log-vol) | OOS IC |
+| Segment | OOS R² (log-vol) | Forecast–realized correlation |
 |---|---|---|
-| validation 2020–2023 | +0.25 | **+0.54** |
-| test 2024–2026 | −0.75 | **+0.43** |
+| validation 2020–2023 | +0.25 | strong positive |
+| test 2024–2026 | −0.75 | stays positive |
 
 Reading: the *ranking* of upcoming vol regimes is robustly forecastable
 (stress signals carry stable, positive-signed information, and volatility
 clusters strongly). The *level* calibration degrades across the post-2023
 vol-regime break — every trailing method, including naive persistence,
 overshoots in the calm 2024–2026 regime (its R² is also negative), which is
-why the volatility literature evaluates models on IC and R² relative to the
-persistence benchmark rather than absolute R².
+why the volatility literature evaluates models on forecast–realized
+correlation and R² relative to the persistence benchmark rather than absolute R².
 
-![Forward 21d volatility: forecast vs realized, and rolling IC](output/vol_pred_vs_actual.png)
+![Forward 21d volatility: forecast vs realized, and rolling forecast-realized correlation](output/vol_pred_vs_actual.png)
 
 ## Application — volatility-targeted duration sizing
 

@@ -14,7 +14,7 @@ Design:
 Evaluation on the pooled out-of-sample record:
   * OOS R^2 vs the naive zero-change benchmark
   * directional accuracy (sign hit rate)
-  * Pearson IC and rank IC between predictions and realized changes
+  * Pearson and rank correlations between predictions and realized changes
   * Newey-West (HAC, 5 lags) t-stat on the predictive regression slope
     (targets overlap by 5 days, so plain t-stats overstate significance)
 
@@ -64,14 +64,14 @@ def evaluate(y: pd.Series, pred: pd.Series, label: str) -> dict:
     yt, pt = y[m], pred[m]
     r2_os = 1.0 - ((yt - pt) ** 2).sum() / (yt**2).sum()
     hit = (np.sign(yt) == np.sign(pt)).mean()
-    ic = stats.pearsonr(pt, yt).statistic
-    rank_ic = stats.spearmanr(pt, yt).statistic
+    corr = stats.pearsonr(pt, yt).statistic
+    rank_corr = stats.spearmanr(pt, yt).statistic
     # Newey-West t-stat on slope of y ~ pred (HAC with 5 lags for 5-day overlap)
     res = sm.OLS(yt.to_numpy(), sm.add_constant(pt.to_numpy())).fit(
         cov_type="HAC", cov_kwds={"maxlags": HORIZON}
     )
     row = dict(model=label, n=len(yt), r2_os=r2_os, hit_rate=hit,
-               ic=ic, rank_ic=rank_ic, nw_tstat=res.tvalues[1])
+               corr=corr, rank_corr=rank_corr, nw_tstat=res.tvalues[1])
     return row
 
 
@@ -116,14 +116,14 @@ def main() -> None:
     ax.axhline(0, c="k", lw=0.5); ax.legend(); ax.set_title("since 2024 (zoom)")
     fig.tight_layout(); fig.savefig(OUT / "direction_pred_vs_actual.png", dpi=150); plt.close(fig)
 
-    # ---- figure 4: rolling 126-day IC ----
+    # ---- figure 4: rolling 126-day forecast-realized correlation ----
     roll_ic = out["pred_ridge"].rolling(126).corr(out["y"])
     fig, ax = plt.subplots(figsize=(11, 4))
     ax.plot(roll_ic.index, roll_ic, lw=1.0)
     ax.axhline(0, c="k", lw=0.6)
     ax.axhline(roll_ic.mean(), c="r", ls="--", lw=0.8, label=f"mean {roll_ic.mean():+.3f}")
-    ax.legend(); ax.set_title("Rolling 126-day IC of Ridge predictions")
-    fig.tight_layout(); fig.savefig(OUT / "direction_rolling_ic.png", dpi=150); plt.close(fig)
+    ax.legend(); ax.set_title("Rolling 126-day forecast-realized correlation (Ridge)")
+    fig.tight_layout(); fig.savefig(OUT / "direction_rolling_corr.png", dpi=150); plt.close(fig)
 
     # ---- figure 5: ridge coefficient path (regime shifts) ----
     fig, ax = plt.subplots(figsize=(11, 5))
@@ -133,7 +133,7 @@ def main() -> None:
     ax.legend(ncol=4, fontsize=8); ax.set_title(f"Ridge coefficients over time (alpha={RIDGE_ALPHA})")
     fig.tight_layout(); fig.savefig(OUT / "direction_coef_paths.png", dpi=150); plt.close(fig)
 
-    print("\nfigures -> output/direction_pred_vs_actual.png, direction_rolling_ic.png, direction_coef_paths.png")
+    print("\nfigures -> output/direction_pred_vs_actual.png, direction_rolling_corr.png, direction_coef_paths.png")
 
 
 if __name__ == "__main__":

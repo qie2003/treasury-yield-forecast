@@ -25,7 +25,6 @@ reported as the untouched test segment.
 Outputs:
   data/vol_predictions.csv
   output/vol_pred_vs_actual.png
-  output/vol_rolling_ic.png
   output/vol_coef_paths.png
 """
 from __future__ import annotations
@@ -87,7 +86,7 @@ def metrics(y: pd.Series, p: pd.Series, naive: pd.Series) -> dict:
     r2_mean = 1 - ((y - p) ** 2).sum() / ((y - y.mean()) ** 2).sum()
     r2_naive = 1 - ((y - p) ** 2).sum() / ((y - naive) ** 2).sum()
     return {"r2_vs_mean": r2_mean, "r2_vs_naive": r2_naive,
-            "ic": np.corrcoef(p, y)[0, 1], "n": len(y)}
+            "corr": np.corrcoef(p, y)[0, 1], "n": len(y)}
 
 
 def main() -> None:
@@ -130,11 +129,11 @@ def main() -> None:
     ax.text(VAL_END, ax.get_ylim()[1] * 0.95, " test ->", fontsize=8, va="top")
     ax.set_ylabel("bp/day"); ax.legend(); ax.set_title("Forward 21d realized vol: forecast vs realized")
     ax = axes[1]
-    ic126 = out["pred_vol_bp"].rolling(126).corr(out["fwd_vol_bp"])
-    ax.plot(ic126.index, ic126, lw=1.0)
+    corr126 = out["pred_vol_bp"].rolling(126).corr(out["fwd_vol_bp"])
+    ax.plot(corr126.index, corr126, lw=1.0)
     ax.axhline(0, c="k", lw=0.6)
-    ax.axhline(ic126.mean(), c="r", ls="--", lw=0.8, label=f"mean {ic126.mean():+.3f}")
-    ax.legend(); ax.set_title("Rolling 126-day IC")
+    ax.axhline(corr126.mean(), c="r", ls="--", lw=0.8, label=f"mean {corr126.mean():+.3f}")
+    ax.legend(); ax.set_title("Rolling 126-day forecast-realized correlation")
     fig.tight_layout(); fig.savefig(OUT / "vol_pred_vs_actual.png", dpi=150); plt.close(fig)
 
     # ---- figure: coefficient paths ----
