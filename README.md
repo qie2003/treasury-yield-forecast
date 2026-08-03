@@ -6,11 +6,11 @@ stress indicators predict U.S. 10-Year Treasury yield behavior out of sample.
 **Headline finding.** The *direction* of weekly yield changes is not
 predictable from public liquidity signals (robust null result, documented
 below). The *volatility* of yield changes is predictable: a rolling-window
-ridge model forecasts forward 21-day realized volatility with out-of-sample
-IC of **+0.54** (validation 2020–2023) and **+0.43** (untouched test
-2024–2026). Applied to volatility-targeted duration sizing, the forecast cuts
-realized portfolio volatility by ~12% and keeps risk in a markedly tighter
-band than buy-and-hold.
+ridge model forecasts forward 21-day realized volatility with robust
+out-of-sample accuracy across a validation period (2020–2023) and an
+untouched test period (2024–2026). Applied to volatility-targeted duration
+sizing, the forecast cuts realized portfolio volatility by ~12% and keeps
+risk in a markedly tighter band than buy-and-hold.
 
 ## Research question
 
